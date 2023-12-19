@@ -1,4 +1,4 @@
-# Career_Foundry_SQLQuery
+# Career_Foundry_SQL_Project
 SQL Queries from Career Foundry Exercise 5 
 
 This SQL repository contains SQL queries created during my Career Foundry Data Analyst Course. 

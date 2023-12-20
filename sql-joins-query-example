@@ -1,0 +1,51 @@
+
+-- This code was written as part of the Rockbuster Project
+
+-- It was used to gather insight on the top 10 countries that are home to the top customers according 
+--   to Rockbuster's sales data. It 
+
+-- This code includes multiple join clauses used to combine datasets based on their attribute relationships
+-- It also uses many SQL operations and data manipulation language to get the effective results. 
+
+-- Here is a link to the relational database model for the datasets used in this query:
+--   https://images.careerfoundry.com/public/courses/data-immersion/A3/E3.2/Figure%207%20schema%20erd.png
+
+SELECT d.country AS Country,
+  COUNT(DISTINCT A.customer_id) AS all_customer_count,
+  COUNT(top_5_customers) AS top_5_customer_count
+  FROM customer A
+  INNER JOIN address B ON A.address_id = B.address_id
+  INNER JOIN city C ON B.city_id = C.city_id
+  INNER JOIN country D ON C.country_id = D.country_id
+  LEFT JOIN (
+    SELECT A.customer_id,
+    SUM(amount) AS Top5_Payments
+    FROM customer A
+    INNER JOIN payment E ON A.customer_id = E.customer_id
+    INNER JOIN address B ON A.address_id = B.address_id
+    INNER JOIN city C ON B.city_id = C.city_id
+    INNER JOIN country D ON C.country_id = D.country_id
+    WHERE c.city IN(SELECT c.city
+        -- Finds Top 5 Cities in Top 5 Country
+        FROM customer A
+        INNER JOIN address B ON A.address_id = B.address_id
+        INNER JOIN city C ON B.city_id = C.city_id
+        INNER JOIN country D ON C.country_id = D.country_id
+        WHERE country IN (SELECT D.country
+            -- Finds Top 5 Country
+            FROM customer A
+            INNER JOIN address B ON A.address_id = B.address_id
+            INNER JOIN city C ON B.city_id = C.city_id
+            INNER JOIN country D ON C.country_id = D.country_id
+            GROUP By d.country
+            ORDER BY COUNT(customer_id) DESC
+            LIMIT 10)
+        GROUP By d.country, c.city
+        ORDER BY COUNT(A.customer_id) DESC
+        LIMIT 10)
+    GROUP By A.customer_id, A.first_name, A.last_name, d.country, c.city
+    ORDER BY SUM(amount) DESC
+    LIMIT 5
+    ) AS top_5_customers ON A.customer_id = top_5_customers.customer_id
+  GROUP BY d.country
+  ORDER BY top_5_customer_count DESC

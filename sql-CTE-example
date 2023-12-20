@@ -1,0 +1,50 @@
+-- Here is an example of a Common Table Expression code written for the RockBuster Project
+
+-- I used this code to gather insight on the top 5 payments of the top 5 customers
+-- using the Rockbuster relational database. This code is similar to that used in the other sql example
+-- only that it uses CTEs to simplify the query. 
+
+-- Here is a link to the relational database schema for the datasets used in this example:
+--   https://images.careerfoundry.com/public/courses/data-immersion/A3/E3.2/Figure%207%20schema%20erd.png
+
+-- CTE That Lists the Top 5 Payements of the Top 5 Customers
+WITH Top5_CustomerPayments_CTE (customer_id, amount) AS(
+  SELECT A.customer_id AS customer_id,
+  SUM(amount) AS Top5_Payments
+  FROM customer A
+  INNER JOIN payment E ON A.customer_id = E.customer_id
+  INNER JOIN address B ON A.address_id = B.address_id
+  INNER JOIN city C ON B.city_id = C.city_id
+  INNER JOIN country D ON C.country_id = D.country_id
+  WHERE c.city IN(SELECT c.city
+    -- Finds Top 5 Cities in Top 5 Countries
+    FROM customer A
+    INNER JOIN address B ON A.address_id = B.address_id
+    INNER JOIN city C ON B.city_id = C.city_id
+    INNER JOIN country D ON C.country_id = D.country_id
+    WHERE country IN (SELECT D.country
+      -- Finds Top 5 Country
+      FROM customer A
+      INNER JOIN address B ON A.address_id = B.address_id
+      INNER JOIN city C ON B.city_id = C.city_id
+      INNER JOIN country D ON C.country_id = D.country_id
+      GROUP By d.country
+      ORDER BY COUNT(customer_id) DESC
+      LIMIT 10)
+    GROUP By d.country, c.city
+    ORDER BY COUNT(A.customer_id) DESC
+    LIMIT 10)
+  GROUP By A.customer_id, A.first_name, A.last_name, d.country, c.city
+  ORDER BY SUM(amount) DESC
+  LIMIT 5)
+SELECT d.country AS Country,
+  COUNT(DISTINCT A.customer_id) AS all_customer_count,
+  COUNT(Top5_CustomerPayments_CTE.customer_id) AS top_5_customer_count
+  FROM customer A
+  INNER JOIN address B ON A.address_id = B.address_id
+  INNER JOIN city C ON B.city_id = C.city_id
+  INNER JOIN country D ON C.country_id = D.country_id
+  LEFT JOIN Top5_CustomerPayments_CTE ON A.customer_id =
+    Top5_CustomerPayments_CTE.customer_id
+  GROUP BY d.country
+  ORDER BY top_5_customer_count DESC

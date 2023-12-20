@@ -2,7 +2,7 @@
 -- This code was written as part of the Rockbuster Project
 
 -- It was used to gather insight on the top 10 countries that are home to the top customers according 
---   to Rockbuster's sales data. It 
+--   to Rockbuster's sales data. 
 
 -- This code includes multiple join clauses used to combine datasets based on their attribute relationships
 -- It also uses many SQL operations and data manipulation language to get the effective results. 
